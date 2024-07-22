@@ -1,9 +1,6 @@
-'use strict';
-
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-
-const PATHS = require('./paths');
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import PATHS from './paths.js';
 
 // used in the module rules and in the stats exlude list
 const IMAGE_TYPES = /\.(png|jpe?g|gif|svg)$/i;
@@ -65,4 +62,4 @@ const common = {
   ],
 };
 
-module.exports = common;
+export default common;

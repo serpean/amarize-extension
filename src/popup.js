@@ -1,46 +1,96 @@
 let scrapedReviews = [];
 
-document.getElementById('scrapeButton').addEventListener('click', startScraping);
-document.getElementById('exportButton').addEventListener('click', () => exportReviewsCSV(scrapedReviews));
+document.addEventListener('DOMContentLoaded', function () {
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const saveApiKeyButton = document.getElementById('saveApiKey');
+  const scrapeButton = document.getElementById('scrapeButton');
+
+  // Cargar la API key guardada (si existe)
+  chrome.storage.sync.get(['openaiApiKey'], function (result) {
+    if (result.openaiApiKey) {
+      apiKeyInput.value = result.openaiApiKey;
+    }
+  });
+
+  saveApiKeyButton.addEventListener('click', saveApiKey);
+  scrapeButton.addEventListener('click', startScraping);
+});
+
+function saveApiKey() {
+  const apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (apiKey) {
+    if (chrome && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.set({ openaiApiKey: apiKey }, function () {
+        alert('API Key saved');
+      });
+    } else {
+      // Fallback para desarrollo local
+      localStorage.setItem('openaiApiKey', apiKey);
+      alert('API Key saved (local storage)');
+    }
+  } else {
+    alert('Please enter an API Key');
+  }
+}
 
 function startScraping() {
-    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        const originalProductUrl = tabs[0].url;
-        const reviewsUrl = originalProductUrl.replace(/\/dp\//, '/product-reviews/') + '?reviewerType=all_reviews';
-        
-        chrome.tabs.update(tabs[0].id, { url: reviewsUrl }, (tab) => {
-            chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                if (info.status === 'complete' && tabId === tab.id) {
-                    chrome.tabs.onUpdated.removeListener(listener);
-                    chrome.tabs.sendMessage(tabId, {action: "scrapeAllReviews", originalUrl: originalProductUrl});
-                }
-            });
-        });
+  const apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (!apiKey) {
+    alert('Please enter an API Key before summarizing');
+    return;
+  }
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const originalProductUrl = tabs[0].url;
+    const reviewsUrl = originalProductUrl.replace(/\/dp\//, '/product-reviews/') + '?reviewerType=all_reviews';
+
+    chrome.tabs.update(tabs[0].id, { url: reviewsUrl }, (tab) => {
+      chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+        if (info.status === 'complete' && tabId === tab.id) {
+          chrome.tabs.onUpdated.removeListener(listener);
+          chrome.tabs.sendMessage(tabId, { action: "scrapeAllReviews", originalUrl: originalProductUrl });
+        }
+      });
     });
+  });
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "reviewsScraped") {
-        scrapedReviews = request.reviews;
-        document.getElementById('result').textContent = `Scraped ${request.reviews.length} reviews with text.`;
-        document.getElementById('exportButton').disabled = false;
-    }
+  if (request.action === "reviewsScraped") {
+    scrapedReviews = request.reviews;
+    document.getElementById('result').textContent = `Scraped ${request.reviews.length} reviews. Summarizing...`;
+    summarizeReviewsWithVercelAI(scrapedReviews);
+  }
 });
 
-function exportReviewsCSV(reviews) {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Title,Text,Rating\n";
+async function summarizeReviewsWithVercelAI(reviews) {
+  chrome.storage.sync.get(['openaiApiKey'], function (result) {
+    if (result.openaiApiKey) {
+      const resultDiv = document.getElementById('result');
+      
+      chrome.runtime.sendMessage(
+        {
+          action: "summarizeReviews",
+          reviews: reviews,
+          apiKey: result.openaiApiKey
+        }
+      );
 
-    reviews.forEach(review => {
-        let row = `"${review.title.replace(/"/g, '""')}","${review.text.replace(/"/g, '""')}","${review.rating}"`;
-        csvContent += row + "\n";
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "amazon_reviews.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      chrome.runtime.onConnect.addListener(function(port) {
+        console.log("port", port);
+        if (port.name === "summarizeStream") {
+          resultDiv.textContent = '';
+          port.onMessage.addListener(function(msg) {
+            if (msg.chunk) {
+              resultDiv.textContent += msg.chunk;
+              // Opcional: hacer scroll al final del div
+              resultDiv.scrollTop = resultDiv.scrollHeight;
+            }
+          });
+        }
+      });
+    } else {
+      document.getElementById('result').textContent = 'Please save your Perplexity API Key first.';
+    }
+  });
 }

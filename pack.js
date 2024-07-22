@@ -1,8 +1,12 @@
-const { readFileSync, existsSync, mkdirSync } = require('fs');
-const { parse, resolve } = require('path');
-const AdmZip = require('adm-zip');
+import { readFileSync, existsSync, mkdirSync } from 'fs';
+import { parse, resolve } from 'path';
+import AdmZip from 'adm-zip';
+import { fileURLToPath } from 'url';
 
 try {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = parse(__filename).dir;
+
   const { base } = parse(__dirname);
   const { version } = JSON.parse(
     readFileSync(resolve(__dirname, 'build', 'manifest.json'), 'utf8')
@@ -22,4 +26,5 @@ try {
   );
 } catch (e) {
   console.error('Error! Failed to generate a zip file.');
+  console.error(e);
 }

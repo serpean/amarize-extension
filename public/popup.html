@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Amazon Review Summarize</title>
+    <title>Ama(Summa)rize Reviews</title>
     <style>
         body { width: 300px; padding: 10px; }
-        button { width: 100%; padding: 10px; margin-top: 10px; }
+        button, input { width: 100%; padding: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
     <h1>Ama(Summa)rize Reviews</h1>
+    <input type="password" id="apiKeyInput" placeholder="Enter OpenAI API Key">
+    <button id="saveApiKey">Save API Key</button>
     <button id="scrapeButton">Summarize Reviews</button>
-    <button id="exportButton" disabled>Export Reviews (CSV)</button>
     <div id="result"></div>
     <script src="popup.js"></script>
 </body>

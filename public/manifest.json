@@ -11,14 +11,21 @@
   },
   "permissions": [
     "activeTab",
-    "tabs"
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.amazon.com/*",
+    "https://api.openai.com/*",
+    "https://api.perplexity.ai/*"
   ],
   "action": {
     "default_title": "Amarize Extension",
     "default_popup": "popup.html"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
