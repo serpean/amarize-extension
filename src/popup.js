@@ -1,112 +1,46 @@
-'use strict';
+let scrapedReviews = [];
 
-import './popup.css';
+document.getElementById('scrapeButton').addEventListener('click', startScraping);
+document.getElementById('exportButton').addEventListener('click', () => exportReviewsCSV(scrapedReviews));
 
-(function () {
-  // We will make use of Storage API to get and store `count` value
-  // More information on Storage API can we found at
-  // https://developer.chrome.com/extensions/storage
-
-  // To get storage access, we have to mention it in `permissions` property of manifest.json file
-  // More information on Permissions can we found at
-  // https://developer.chrome.com/extensions/declare_permissions
-  const counterStorage = {
-    get: (cb) => {
-      chrome.storage.sync.get(['count'], (result) => {
-        cb(result.count);
-      });
-    },
-    set: (value, cb) => {
-      chrome.storage.sync.set(
-        {
-          count: value,
-        },
-        () => {
-          cb();
-        }
-      );
-    },
-  };
-
-  function setupCounter(initialValue = 0) {
-    document.getElementById('counter').innerHTML = initialValue;
-
-    document.getElementById('incrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'INCREMENT',
-      });
-    });
-
-    document.getElementById('decrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'DECREMENT',
-      });
-    });
-  }
-
-  function updateCounter({ type }) {
-    counterStorage.get((count) => {
-      let newCount;
-
-      if (type === 'INCREMENT') {
-        newCount = count + 1;
-      } else if (type === 'DECREMENT') {
-        newCount = count - 1;
-      } else {
-        newCount = count;
-      }
-
-      counterStorage.set(newCount, () => {
-        document.getElementById('counter').innerHTML = newCount;
-
-        // Communicate with content script of
-        // active tab by sending a message
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          const tab = tabs[0];
-
-          chrome.tabs.sendMessage(
-            tab.id,
-            {
-              type: 'COUNT',
-              payload: {
-                count: newCount,
-              },
-            },
-            (response) => {
-              console.log('Current count value passed to contentScript file');
-            }
-          );
+function startScraping() {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        const originalProductUrl = tabs[0].url;
+        const reviewsUrl = originalProductUrl.replace(/\/dp\//, '/product-reviews/') + '?reviewerType=all_reviews';
+        
+        chrome.tabs.update(tabs[0].id, { url: reviewsUrl }, (tab) => {
+            chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                if (info.status === 'complete' && tabId === tab.id) {
+                    chrome.tabs.onUpdated.removeListener(listener);
+                    chrome.tabs.sendMessage(tabId, {action: "scrapeAllReviews", originalUrl: originalProductUrl});
+                }
+            });
         });
-      });
     });
-  }
+}
 
-  function restoreCounter() {
-    // Restore count value
-    counterStorage.get((count) => {
-      if (typeof count === 'undefined') {
-        // Set counter value as 0
-        counterStorage.set(0, () => {
-          setupCounter(0);
-        });
-      } else {
-        setupCounter(count);
-      }
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', restoreCounter);
-
-  // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
-      type: 'GREETINGS',
-      payload: {
-        message: 'Hello, my name is Pop. I am from Popup.',
-      },
-    },
-    (response) => {
-      console.log(response.message);
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "reviewsScraped") {
+        scrapedReviews = request.reviews;
+        document.getElementById('result').textContent = `Scraped ${request.reviews.length} reviews with text.`;
+        document.getElementById('exportButton').disabled = false;
     }
-  );
-})();
+});
+
+function exportReviewsCSV(reviews) {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Title,Text,Rating\n";
+
+    reviews.forEach(review => {
+        let row = `"${review.title.replace(/"/g, '""')}","${review.text.replace(/"/g, '""')}","${review.rating}"`;
+        csvContent += row + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "amazon_reviews.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
