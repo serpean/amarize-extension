@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const originalProductUrl = tabs[0].url;
     const isAmazonSite = originalProductUrl.match(/^https?:\/\/(.+\.)?amazon\.(com|co\.uk|de|fr|it|es|ca|com\.mx|com\.br|com\.au)\//);
-    console.log('isAmazonSite', isAmazonSite);
     if (!isAmazonSite) {
       scrapeButton.textContent = 'This extension only works on Amazon product pages.';
       scrapeButton.disabled = true;
@@ -126,7 +125,6 @@ async function summarizeReviewsWithAI(reviews) {
       );
 
       chrome.runtime.onConnect.addListener(function (port) {
-        console.log("port", port);
         if (port.name === "summarizeStream") {
           let summary = '';
           port.onMessage.addListener(function (msg) {

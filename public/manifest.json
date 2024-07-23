@@ -10,12 +10,10 @@
     "128": "icons/icon_128.png"
   },
   "permissions": [
-    "activeTab",
     "tabs",
     "storage"
   ],
   "host_permissions": [
-    "https://api.openai.com/*",
     "https://api.perplexity.ai/*",
     "https://*.amazon.com/*",
     "https://*.amazon.co.uk/*",

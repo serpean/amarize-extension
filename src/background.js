@@ -14,7 +14,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function summarizeReviews(reviews, apiKey) {
-  console.log('Summarizing reviews with Perplexity API');
   const perplexity = createOpenAI({
     apiKey: apiKey,
     baseURL: 'https://api.perplexity.ai/',

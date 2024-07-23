@@ -113,7 +113,7 @@ function goToNextPage() {
       nextButton.click();
       setTimeout(() => {
         resolve(true);
-      }, 2000); // Espera 2 segundos para que cargue la página
+      }, 2000);
     } else {
       resolve(false);
     }
