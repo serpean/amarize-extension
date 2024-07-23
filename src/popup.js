@@ -87,12 +87,11 @@ function startScraping() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const originalProductUrl = tabs[0].url;
     const isAmazonSite = originalProductUrl.match(/^https?:\/\/(.+\.)?amazon\.(com|co\.uk|de|fr|it|es|ca|com\.mx|com\.br|com\.au)\//);
-    console.log('isAmazonSite', isAmazonSite);
     if (!isAmazonSite) {
       resultDiv.textContent = 'This extension only works on Amazon product pages.';
       return;
     }
-    const reviewsUrl = originalProductUrl.replace(/\/dp\//, '/product-reviews/') + '?reviewerType=all_reviews';
+    const reviewsUrl = originalProductUrl.replace(/\/dp\//, '/product-reviews/') + '?reviewerType=all_reviews&sortBy=recent';
 
     chrome.tabs.update(tabs[0].id, { url: reviewsUrl }, (tab) => {
       chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
@@ -108,7 +107,7 @@ function startScraping() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "reviewsScraped") {
     scrapedReviews = request.reviews;
-    document.getElementById('result').textContent = `Scraped ${request.reviews.length} reviews. Summarizing...`;
+    document.getElementById('result').textContent = `Retrieved ${request.reviews.length} reviews. Summarizing...`;
     summarizeReviewsWithAI(scrapedReviews);
   }
 });

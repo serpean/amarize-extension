@@ -7,10 +7,10 @@ function createModal() {
     const modalHTML = `
         <div id="reviewScraperModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
             <div style="background-color:#fefefe; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:500px;">
-                <h2>Ama(Summa)rize Reviews</h2>
-                <p id="modalMessage">Getting reviews...</p>
-                <div id="progressBarContainer" style="width:100%; background-color:#f3f3f3; padding:3px; border-radius:3px;">
-                    <div id="progressBar" style="width:0%; height:20px; background-color:#4CAF50; border-radius:2px; transition:width 0.5s;"></div>
+                <h2>Getting reviews...</h2>
+                <p id="modalMessage"></p>
+                <div id="progressBarContainer" style="width:100%; background-color:#f0f2f2; padding:0px; border-radius:4px;">
+                    <div id="progressBar" style="width:0%; height:20px; background-color:#ffa41c; border-radius:4px; transition:width 0.5s;"></div>
                 </div>
                 <p id="progressText">Progress: 0 / 0 (with text)</p>
             </div>
@@ -28,9 +28,10 @@ function hideModal() {
 }
 
 function updateModalProgress(scrapedReviews, totalReviews) {
-    const percentage = (scrapedReviews / totalReviews) * 100;
+    const maxReviews = Math.min(totalReviews, 100);
+    const percentage = (scrapedReviews / maxReviews) * 100;
     document.getElementById('progressBar').style.width = `${percentage}%`;
-    document.getElementById('progressText').textContent = `Reviews: ${scrapedReviews} / ${totalReviews}`;
+    document.getElementById('progressText').textContent = `Reviews: ${scrapedReviews} / ${maxReviews}`;
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -49,16 +50,20 @@ async function scrapeAllReviews() {
     const reviewInfoElement = document.querySelector('[data-hook="cr-filter-info-review-rating-count"]');
     if (reviewInfoElement) {
         const reviewInfoText = reviewInfoElement.textContent.trim();
-        const match = reviewInfoText.match(/(\d+) total ratings, (\d+) with reviews/);
+        const match = reviewInfoText.match(/(\d{1,3}(?:[.,]\d{3})*|\d+).*?(\d{1,3}(?:[.,]\d{3})*|\d+)/);
         if (match) {
-            totalReviews = parseInt(match[1]);
-            reviewsWithText = parseInt(match[2]);
+            totalReviews = parseInt(match[1].replace(/[,.]/g, ''));
+            reviewsWithText = parseInt(match[2].replace(/[,.]/g, ''));
         }
     }
 
     if (totalReviews === 0 || reviewsWithText === 0) {
-        document.getElementById('modalMessage').textContent = "Error: No se pudo obtener la información de las reseñas.";
+        document.getElementById('modalMessage').textContent = "Error: I cannot find the number of reviews on this page.";
         return;
+    }
+
+    if (reviewsWithText > 100) {
+      document.getElementById('modalMessage').innerHTML = "<div style='color:#ffa41c;'>Warning: This product has more than 100 reviews with text.<br/> Only the first 100 will be analyzed.</div>";
     }
 
     while (hasNextPage && allReviews.length < reviewsWithText) {
@@ -70,7 +75,7 @@ async function scrapeAllReviews() {
         hasNextPage = await goToNextPage();
     }
 
-    document.getElementById('modalMessage').textContent = `Scraped ${allReviews.length} reviews with text.`;
+    document.getElementById('modalMessage').textContent = `Retrieved ${allReviews.length} reviews with text.`;
     chrome.runtime.sendMessage({action: "reviewsScraped", reviews: allReviews});
 
     setTimeout(() => {
@@ -87,12 +92,13 @@ function scrapeCurrentPage() {
     const titleElement = review.querySelector('[data-hook="review-title"]');
     const textElement = review.querySelector('[data-hook="review-body"]');
     const ratingElement = review.querySelector('[data-hook="cmps-review-star-rating"]');
+    const reviewStartRating = review.querySelector('[data-hook="review-star-rating"]');
     
-    if (titleElement && textElement && ratingElement) {
+    if (titleElement && textElement && (ratingElement || reviewStartRating)) {
       const title = titleElement.textContent.trim();
       const text = textElement.textContent.trim();
-      const rating = ratingElement.textContent.trim();
-      
+      const rating = ratingElement?.textContent?.trim() || reviewStartRating?.textContent?.trim();
+
       reviews.push({ title, text, rating });
     }
   });
