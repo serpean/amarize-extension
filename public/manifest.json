@@ -15,9 +15,18 @@
     "storage"
   ],
   "host_permissions": [
-    "https://www.amazon.com/*",
     "https://api.openai.com/*",
-    "https://api.perplexity.ai/*"
+    "https://api.perplexity.ai/*",
+    "https://*.amazon.com/*",
+    "https://*.amazon.co.uk/*",
+    "https://*.amazon.de/*",
+    "https://*.amazon.fr/*",
+    "https://*.amazon.it/*",
+    "https://*.amazon.es/*",
+    "https://*.amazon.ca/*",
+    "https://*.amazon.com.mx/*",
+    "https://*.amazon.com.br/*",
+    "https://*.amazon.com.au/*"
   ],
   "action": {
     "default_title": "Amarize Extension",
@@ -30,7 +39,16 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.amazon.com/*"
+        "https://*.amazon.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.fr/*",
+        "https://*.amazon.it/*",
+        "https://*.amazon.es/*",
+        "https://*.amazon.ca/*",
+        "https://*.amazon.com.mx/*",
+        "https://*.amazon.com.br/*",
+        "https://*.amazon.com.au/*"
       ],
       "js": [
         "content.js"

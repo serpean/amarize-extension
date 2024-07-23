@@ -2,28 +2,27 @@ import { marked } from 'marked';
 
 let scrapedReviews = [];
 
-// document.addEventListener('DOMContentLoaded', function () {
-//   const apiKeyInput = document.getElementById('apiKeyInput');
-//   const saveApiKeyButton = document.getElementById('saveApiKey');
-//   const scrapeButton = document.getElementById('scrapeButton');
-
-//   // Cargar la API key guardada (si existe)
-//   chrome.storage.sync.get(['openaiApiKey'], function (result) {
-//     if (result.openaiApiKey) {
-//       apiKeyInput.value = result.openaiApiKey;
-//     }
-//   });
-
-//   saveApiKeyButton.addEventListener('click', saveApiKey);
-//   scrapeButton.addEventListener('click', startScraping);
-// });
-
 document.addEventListener('DOMContentLoaded', function () {
+
   const settingsIcon = document.getElementById('settingsIcon');
   const apiKeyConfig = document.getElementById('apiKeyConfig');
   const apiKeyInput = document.getElementById('apiKeyInput');
   const saveApiKeyButton = document.getElementById('saveApiKey');
   const scrapeButton = document.getElementById('scrapeButton');
+
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const originalProductUrl = tabs[0].url;
+    const isAmazonSite = originalProductUrl.match(/^https?:\/\/(.+\.)?amazon\.(com|co\.uk|de|fr|it|es|ca|com\.mx|com\.br|com\.au)\//);
+    console.log('isAmazonSite', isAmazonSite);
+    if (!isAmazonSite) {
+      scrapeButton.textContent = 'This extension only works on Amazon product pages.';
+      scrapeButton.disabled = true;
+      scrapeButton.style.backgroundColor = '#ccc';
+      scrapeButton.style.cursor = 'not-allowed';
+      return;
+    }
+  });
 
   // Comprobar si la API key está configurada
   chrome.storage.sync.get(['openaiApiKey'], function (result) {
@@ -87,6 +86,12 @@ function startScraping() {
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const originalProductUrl = tabs[0].url;
+    const isAmazonSite = originalProductUrl.match(/^https?:\/\/(.+\.)?amazon\.(com|co\.uk|de|fr|it|es|ca|com\.mx|com\.br|com\.au)\//);
+    console.log('isAmazonSite', isAmazonSite);
+    if (!isAmazonSite) {
+      resultDiv.textContent = 'This extension only works on Amazon product pages.';
+      return;
+    }
     const reviewsUrl = originalProductUrl.replace(/\/dp\//, '/product-reviews/') + '?reviewerType=all_reviews';
 
     chrome.tabs.update(tabs[0].id, { url: reviewsUrl }, (tab) => {
