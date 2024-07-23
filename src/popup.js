@@ -1,3 +1,5 @@
+import { marked } from 'marked';
+
 let scrapedReviews = [];
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -79,11 +81,11 @@ async function summarizeReviewsWithVercelAI(reviews) {
       chrome.runtime.onConnect.addListener(function(port) {
         console.log("port", port);
         if (port.name === "summarizeStream") {
-          resultDiv.textContent = '';
+          let summary = '';
           port.onMessage.addListener(function(msg) {
             if (msg.chunk) {
-              resultDiv.textContent += msg.chunk;
-              // Opcional: hacer scroll al final del div
+              summary += msg.chunk;
+              resultDiv.innerHTML = marked.parse(summary);
               resultDiv.scrollTop = resultDiv.scrollHeight;
             }
           });

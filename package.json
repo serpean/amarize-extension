@@ -25,6 +25,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.37",
     "ai": "^3.2.33",
+    "marked": "^13.0.2",
     "openai": "^4.52.7"
   }
 }
