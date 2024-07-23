@@ -9,7 +9,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     summarizeReviews(request.reviews, request.apiKey)
       .then(() => sendResponse({ success: true }))
       .catch(error => sendResponse({ success: false, error: error.message }));
-    return true; // Indica que la respuesta se enviará de forma asíncrona
+    return true;
   }
 });
 
@@ -38,7 +38,6 @@ async function summarizeReviews(reviews, apiKey) {
     const port = chrome.runtime.connect({ name: "summarizeStream" });
     
     for await (const textPart of result.textStream) {
-      console.log("textPart", textPart);
       port.postMessage({ chunk: textPart });
     }
     
