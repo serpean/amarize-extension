@@ -30,7 +30,7 @@ function hideModal() {
 function updateModalProgress(scrapedReviews, totalReviews) {
     const percentage = (scrapedReviews / totalReviews) * 100;
     document.getElementById('progressBar').style.width = `${percentage}%`;
-    document.getElementById('progressText').textContent = `Reviews: ${scrapedReviews} / ${totalReviews})`;
+    document.getElementById('progressText').textContent = `Reviews: ${scrapedReviews} / ${totalReviews}`;
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

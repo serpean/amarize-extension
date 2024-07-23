@@ -1,70 +1,87 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Ama(Summa)rize Reviews</title>
-    <style>
-        body { 
-            width: 400px; 
-            padding: 10px; 
-            font-family: Arial, sans-serif;
-        }
-        button, input { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 10px; 
-        }
-        #result, #errorMessage {
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        #result {
-            display: none;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        #errorMessage {
-            color: red;
-            display: none;
-        }
-        code {
-            background-color: #f4f4f4;
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #settingsIcon {
-            cursor: pointer;
-            font-size: 24px;
-        }
-        #apiKeyConfig {
-            display: none;
-        }
-    </style>
+  <title>Ama(Summa)rize Reviews</title>
+  <style>
+    body {
+      width: 400px;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+
+    button,
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      box-sizing: border-box;
+    }
+
+    #result,
+    #errorMessage {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    #result {
+      display: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    #errorMessage {
+      color: red;
+      display: none;
+    }
+
+    code {
+      background-color: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    pre {
+      background-color: #f4f4f4;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #settingsIcon {
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+    }
+
+    #apiKeyConfig {
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="header">
-        <h1>Ama(Summa)rize Reviews</h1>
-        <span id="settingsIcon">S</span>
-    </div>
-    <div id="apiKeyConfig">
-        <input type="password" id="apiKeyInput" placeholder="Enter OpenAI API Key">
-        <button id="saveApiKey">Save API Key</button>
-    </div>
-    <div id="errorMessage"></div>
-    <button id="scrapeButton">Summarize Reviews</button>
-    <div id="result"></div>
-    <script src="popup.js" type="module"></script>
+  <div class="header">
+    <h1>Ama(Summa)rize Reviews</h1>
+
+    <img id="settingsIcon" src="settings.svg" alt="Settings">
+  </div>
+  <div id="apiKeyConfig">
+    <input type="password" id="apiKeyInput" placeholder="Enter OpenAI API Key">
+    <button id="saveApiKey">Save API Key</button>
+  </div>
+  <div id="errorMessage"></div>
+  <button id="scrapeButton">Summarize Reviews</button>
+  <div id="result"></div>
+  <script src="popup.js" type="module"></script>
 </body>
+
 </html>

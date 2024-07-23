@@ -36,5 +36,15 @@
         "content.js"
       ]
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "settings.svg"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
   ]
 }
