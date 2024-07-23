@@ -38,7 +38,6 @@
     }
 
     button {
-
       display: inline-block;
       outline: 0;
       cursor: pointer;
@@ -114,12 +113,13 @@
 
 <body>
   <div class="header">
-    <h1>Ama(Summa)rize Reviews</h1>
+    <img src="icons/icon_128.png" alt="Ama(Summa)rize Reviews" width="64" height="64">
+    <h1>Ama<span style="color:#e77600">(Summa)</span>rize Reviews</h1>
 
     <img id="settingsIcon" src="settings.svg" alt="Settings">
   </div>
   <div id="apiKeyConfig">
-    <input type="password" id="apiKeyInput" placeholder="Enter OpenAI API Key">
+    <input type="password" id="apiKeyInput" placeholder="Enter Perplexity API Key">
     <button id="saveApiKey">Save API Key</button>
   </div>
   <div id="errorMessage"></div>

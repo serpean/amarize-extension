@@ -58,7 +58,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "settings.svg"
+        "settings.svg",
+        "icon_128.png"
       ],
       "matches": [
         "<all_urls>"
