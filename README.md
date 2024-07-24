@@ -7,7 +7,7 @@ Ama(Summa)rize is a Chrome extension that summarizes Amazon reviews using Perple
 - Configure Perplexity API Key
 - Summarize Amazon Reviews
 
-https://github.com/serpean/amarize-extension/blob/main/docs/video.mp4
+https://github.com/user-attachments/assets/c24ddfac-2880-4469-8aee-484346ad5ce7
 
 ## Install in Chrome
 
