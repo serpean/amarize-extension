@@ -1,7 +1,7 @@
 {
   "name": "amarize-extension",
   "version": "0.1.0",
-  "description": "My Chrome Extension",
+  "description": "Summarize reviews from Amazon product pages",
   "type": "module",
   "private": true,
   "scripts": {
