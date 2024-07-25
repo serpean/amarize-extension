@@ -9,9 +9,9 @@ Ama(Summa)rize is a Chrome extension that summarizes Amazon reviews using Perple
 
 https://github.com/user-attachments/assets/c24ddfac-2880-4469-8aee-484346ad5ce7
 
-## Install in Chrome
+## Install in Chrome Store
 
-[**Chrome** extension]() <!-- TODO: Add chrome extension link inside parenthesis -->
+[**Chrome** extension store](https://chromewebstore.google.com/detail/hpljkniefjngjokadmhinfjhabmpgoce)
 
 
 ### Local Installation
