@@ -21,38 +21,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function summarizeReviews(productId, reviews, apiConfig) {
-  let ai;
-  let model;
-
-  switch (apiConfig.apiType) {
-    case 'perplexity':
-      ai = createOpenAI({
-        apiKey: apiConfig.apiKey,
-        baseURL: 'https://api.perplexity.ai/',
-      });
-      model = ai(apiConfig.model);
-      break;
-    case 'openai':
-      ai = createOpenAI({
-        apiKey: apiConfig.apiKey,
-      });
-      model = ai(apiConfig.model);
-      break;
-    case 'custom':
-      ai = createOpenAI({
-        apiKey: apiConfig.apiKey,
-        baseURL: apiConfig.customUrl,
-      });
-      model = ai(apiConfig.customModel);
-      break;
-    default:
-      throw new Error('Invalid API type');
-  }
-
-  const reviewTexts = reviews.map(review => review.text).join('\n\n');
-  const reviewsLanguage = apiConfig.language || 'English';
 
   try {
+
+    let ai;
+    let model;
+
+    switch (apiConfig.apiType) {
+      case 'perplexity':
+        ai = createOpenAI({
+          apiKey: apiConfig.apiKey,
+          baseURL: 'https://api.perplexity.ai/',
+        });
+        model = ai(apiConfig.model);
+        break;
+      case 'openai':
+        ai = createOpenAI({
+          apiKey: apiConfig.apiKey,
+        });
+        model = ai(apiConfig.model);
+        break;
+      case 'custom':
+        ai = createOpenAI({
+          apiKey: apiConfig.apiKey,
+          baseURL: apiConfig.customUrl,
+        });
+        model = ai(apiConfig.customModel);
+        break;
+      default:
+        throw new Error('Invalid API type');
+    }
+
+    const reviewTexts = reviews.map(review => review.text).join('\n\n');
+    const reviewsLanguage = apiConfig.language || 'English';
+    console.log('Summarizing reviews in language:', reviewsLanguage);
     const result = await streamText({
       model: model,
       maxTokens: 1024,
@@ -77,8 +79,10 @@ async function summarizeReviews(productId, reviews, apiConfig) {
 
     cacheSummary(productId, fullSummary);
   } catch (error) {
+    const port = chrome.runtime.connect({ name: "summarizeStreamError" });
     console.error('Error summarizing reviews:', error);
-    throw error;
+    port.postMessage({ error: error.message });
+    port.disconnect();
   }
 }
 

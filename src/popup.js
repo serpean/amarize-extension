@@ -219,6 +219,12 @@ async function summarizeReviewsWithAI(reviews, productId) {
               }
             });
           }
+          if (port.name === "summarizeStreamError") {
+            port.onMessage.addListener(function (msg) {
+              console.log("msg", msg);
+              resultDiv.textContent = 'Error summarizing reviews. Please check your configuration. Error message: ' + msg.error;
+            });
+          }
         });
       } else {
         document.getElementById('result').textContent = 'Please save your configuration first.';
@@ -247,6 +253,12 @@ async function summarizeReviewsWithAI(reviews, productId) {
               resultDiv.innerHTML = marked.parse(summary);
               resultDiv.scrollTop = resultDiv.scrollHeight;
             }
+          });
+        }
+        if (prototype.name === "summarizeStreamError") {
+          port.onMessage.addListener(function (msg) {
+            console.log("msg", msg);
+            resultDiv.textContent = 'Error summarizing reviews. Please check your configuration. Error message: ' + msg.error;
           });
         }
       });
