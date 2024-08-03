@@ -12,11 +12,10 @@ const perplexityModels = [
 const openaiModels = [
   { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
   { value: 'gpt-4', label: 'GPT-4' },
-  { value: 'gpt-4-32k', label: 'GPT-4 32k' },
+  { value: 'gpt-4o', label: 'GPT-4o' },
 ];
 
 document.addEventListener('DOMContentLoaded', function () {
-
   const settingsIcon = document.getElementById('settingsIcon');
   const apiKeyConfig = document.getElementById('apiKeyConfig');
   const apiKeyInput = document.getElementById('apiKeyInput');
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const modelSelect = document.getElementById('modelSelect');
   const customUrlInput = document.getElementById('customUrlInput');
   const customModelInput = document.getElementById('customModelInput');
-
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const originalProductUrl = tabs[0].url;

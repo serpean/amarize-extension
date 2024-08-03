@@ -3,38 +3,6 @@ let totalReviews = 0;
 let reviewsWithText = 0;
 let productId = '';
 
-// Crear e insertar el modal en la página
-function createModal() {
-    const modalHTML = `
-        <div id="reviewScraperModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
-            <div style="background-color:#fefefe; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:500px;">
-                <h2>Getting reviews...</h2>
-                <p id="modalMessage"></p>
-                <div id="progressBarContainer" style="width:100%; background-color:#f0f2f2; padding:0px; border-radius:4px;">
-                    <div id="progressBar" style="width:0%; height:20px; background-color:#ffa41c; border-radius:4px; transition:width 0.5s;"></div>
-                </div>
-                <p id="progressText">Progress: 0 / 0 (with text)</p>
-            </div>
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-function showModal() {
-    document.getElementById('reviewScraperModal').style.display = 'block';
-}
-
-function hideModal() {
-    document.getElementById('reviewScraperModal').style.display = 'none';
-}
-
-function updateModalProgress(scrapedReviews, totalReviews) {
-    const maxReviews = Math.min(totalReviews, 100);
-    const percentage = (scrapedReviews / maxReviews) * 100;
-    document.getElementById('progressBar').style.width = `${percentage}%`;
-    document.getElementById('progressText').textContent = `Reviews: ${scrapedReviews} / ${maxReviews}`;
-}
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "scrapeAllReviews") {
         originalUrl = request.originalUrl;
@@ -44,6 +12,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         scrapeAllReviews();
     }
 });
+
+function createModal() {
+  const modalHTML = `
+      <div id="reviewScraperModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
+          <div style="background-color:#fefefe; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:500px;">
+              <h2>Getting reviews...</h2>
+              <p id="modalMessage"></p>
+              <div id="progressBarContainer" style="width:100%; background-color:#f0f2f2; padding:0px; border-radius:4px;">
+                  <div id="progressBar" style="width:0%; height:20px; background-color:#ffa41c; border-radius:4px; transition:width 0.5s;"></div>
+              </div>
+              <p id="progressText">Progress: 0 / 0 (with text)</p>
+          </div>
+      </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function showModal() {
+  document.getElementById('reviewScraperModal').style.display = 'block';
+}
+
+function hideModal() {
+  document.getElementById('reviewScraperModal').style.display = 'none';
+}
+
+function updateModalProgress(scrapedReviews, totalReviews) {
+  const maxReviews = Math.min(totalReviews, 100);
+  const percentage = (scrapedReviews / maxReviews) * 100;
+  document.getElementById('progressBar').style.width = `${percentage}%`;
+  document.getElementById('progressText').textContent = `Reviews: ${scrapedReviews} / ${maxReviews}`;
+}
 
 async function scrapeAllReviews() {
     let allReviews = [];

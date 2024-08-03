@@ -97,7 +97,6 @@ function cacheSummary(productId, summary) {
   }
 }
 
-
 async function getCachedSummary(productId) {
   return new Promise((resolve) => {
     chrome.storage.local.get(productId, function (result) {
