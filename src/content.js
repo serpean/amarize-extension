@@ -59,6 +59,12 @@ async function scrapeAllReviews() {
 
     if (totalReviews === 0 || reviewsWithText === 0) {
         document.getElementById('modalMessage').textContent = "Error: I cannot find the number of reviews on this page.";
+        document.getElementById('progressText').textContent = "";
+        chrome.runtime.sendMessage({action: "noReviews"});
+        setTimeout(() => {
+            hideModal();
+            window.location.href = originalUrl;
+        }, 3000);
         return;
     }
 

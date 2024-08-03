@@ -104,6 +104,9 @@ function startScraping() {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "noReviews") {
+    document.getElementById('result').textContent = 'No reviews found on this page.';
+  }
   if (request.action === "reviewsScraped") {
     scrapedReviews = request.reviews;
     document.getElementById('result').textContent = `Retrieved ${request.reviews.length} reviews. Summarizing...`;
