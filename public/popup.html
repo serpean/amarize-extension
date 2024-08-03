@@ -38,8 +38,20 @@
     </div>
     <label for="apiSelect" class="amz-label">API key:</label>
     <input type="password" id="apiKeyInput" class="amz-input" placeholder="Enter valid API Key">
-    <button id="saveApiKey" class="amz-btn">Save API Key</button>
-
+    <label for="languageSelect" class="amz-label">Response language:</label>
+    <select id="languageSelect" class="amz-input">
+      <option value="English" selected="selected">English</option>
+      <option value="German">German</option>
+      <option value="Spanish">Spanish</option>
+      <option value="French">French</option>
+      <option value="Italian">Italian</option>
+      <option value="Japanese">Japanese</option>
+      <option value="Korean">Korean</option>
+      <option value="Portuguese">Portuguese</option>
+      <option value="Russian">Russian</option>
+      <option value="Chinese">Chinese</option>
+    </select>
+    <button id="saveApiKey" class="amz-btn">Save</button>
   </div>
 
   <div id="errorMessage"></div>

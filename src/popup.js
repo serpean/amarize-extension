@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const modelSelect = document.getElementById('modelSelect');
   const customUrlInput = document.getElementById('customUrlInput');
   const customModelInput = document.getElementById('customModelInput');
+  const languageSelect = document.getElementById('languageSelect');
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const originalProductUrl = tabs[0].url;
@@ -69,10 +70,12 @@ document.addEventListener('DOMContentLoaded', function () {
   saveApiKeyButton.addEventListener('click', function () {
     const apiKey = apiKeyInput.value.trim();
     const apiType = apiSelect.value;
+    const language = languageSelect.value;
     if (apiKey) {
       const config = {
         apiKey: apiKey,
         apiType: apiType,
+        language: language,
         model: apiType === 'custom' ? null : modelSelect.value,
         customUrl: apiType === 'custom' ? customUrlInput.value.trim() : null,
         customModel: apiType === 'custom' ? customModelInput.value.trim() : null
@@ -257,6 +260,7 @@ function getProductIdFromUrl(url) {
   const match = url.match(/\/dp\/([A-Z0-9]+)/);
   return match ? match[1] : null;
 }
+
 function displaySummary(summary) {
   const resultDiv = document.getElementById('result');
   resultDiv.innerHTML = marked.parse(summary);

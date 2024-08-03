@@ -4,12 +4,11 @@ body {
     font-family: Arial, sans-serif;
 }
 
-
-
 .amz-label {
     display: block;
     font-size: 13px;
-    margin: 5px;
+    margin-top: 5px;
+    margin-bottom: 3px;
 }
 
 .amz-input {
@@ -25,7 +24,7 @@ body {
     box-shadow: 0 1px 0 rgb(255 255 255 / 50%), 0 1px 0 rgb(0 0 0 / 7%) inset;
     outline: 0;
     color: #111;
-    font-size: 13px;
+    font-size: medium;
 }
 
 .amz-input:focus {
@@ -43,7 +42,7 @@ body {
     box-shadow: 0 2px 5px 0 rgb(213 217 217 / 50%);
     background: #FFD814;
     border: 1px solid #FCD200;
-    font-size: 13px;
+    font-size: medium;
     height: 31px;
     padding: 0 11px;
     text-align: center;
@@ -69,6 +68,7 @@ body {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    font-size: medium;
 }
 
 #result {

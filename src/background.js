@@ -50,12 +50,13 @@ async function summarizeReviews(productId, reviews, apiConfig) {
   }
 
   const reviewTexts = reviews.map(review => review.text).join('\n\n');
+  const reviewsLanguage = apiConfig.language || 'English';
 
   try {
     const result = await streamText({
       model: model,
       maxTokens: 1024,
-      system: 'You are a helpful assistant that summarizes product reviews.',
+      system: `You are a helpful assistant that summarizes product reviews in ${reviewsLanguage}.`,
       messages: [
         {
           role: 'user',
