@@ -24,7 +24,7 @@ body {
     box-shadow: 0 1px 0 rgb(255 255 255 / 50%), 0 1px 0 rgb(0 0 0 / 7%) inset;
     outline: 0;
     color: #111;
-    font-size: medium;
+    font-size: 14px;
 }
 
 .amz-input:focus {
@@ -33,7 +33,9 @@ body {
 }
 
 .amz-btn {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
     margin-top: 10px;
     outline: 0;
@@ -42,8 +44,8 @@ body {
     box-shadow: 0 2px 5px 0 rgb(213 217 217 / 50%);
     background: #FFD814;
     border: 1px solid #FCD200;
-    font-size: medium;
-    height: 31px;
+    font-size: 14px;
+    min-height: 40px;
     padding: 0 11px;
     text-align: center;
     width: 100%;
@@ -68,7 +70,7 @@ body {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: medium;
+    font-size: 14px;
 }
 
 #result {
