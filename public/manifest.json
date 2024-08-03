@@ -57,7 +57,8 @@
     {
       "resources": [
         "settings.svg",
-        "icon_128.png"
+        "icon_128.png",
+        "popup.css"
       ],
       "matches": [
         "<all_urls>"

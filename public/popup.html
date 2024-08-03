@@ -3,112 +3,8 @@
 
 <head>
   <title>Ama(Summa)rize Reviews</title>
-  <style>
-    body {
-      width: 400px;
-      padding: 10px;
-      font-family: Arial, sans-serif;
-    }
-
-    button,
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      box-sizing: border-box;
-    }
-
-    input {
-      background-color: #fff;
-      height: 31px;
-      padding: 3px 7px;
-      line-height: normal;
-      border: 1px solid #a6a6a6;
-      border-top-color: #949494;
-      border-radius: 3px;
-      box-shadow: 0 1px 0 rgb(255 255 255 / 50%), 0 1px 0 rgb(0 0 0 / 7%) inset;
-      outline: 0;
-      color: #111;
-      font-size: 13px;
-    }
-
-    input:focus {
-      border-color: #e77600;
-      box-shadow: 0 0 3px 2px rgb(228 121 17 / 50%);
-    }
-
-    button {
-      display: inline-block;
-      outline: 0;
-      cursor: pointer;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px 0 rgb(213 217 217 / 50%);
-      background: #FFD814;
-      border: 1px solid #FCD200;
-      font-size: 13px;
-      height: 31px;
-      padding: 0 11px;
-      text-align: center;
-      width: 100%;
-      min-width: 200px;
-      font-weight: 500;
-      color: #0F1111;
-    }
-
-    button:hover {
-      background: #F7CA00;
-      border-color: #F2C200;
-      box-shadow: 0 2px 5px 0 rgb(213 217 217 / 50%);
-    }
-
-    #result,
-    #errorMessage {
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-
-    #result {
-      display: none;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    #errorMessage {
-      color: red;
-      display: none;
-    }
-
-    code {
-      background-color: #f4f4f4;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-
-    pre {
-      background-color: #f4f4f4;
-      padding: 10px;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #settingsIcon {
-      cursor: pointer;
-      width: 24px;
-      height: 24px;
-    }
-
-    #apiKeyConfig {
-      display: none;
-    }
-  </style>
+  
+  <link rel="stylesheet" href="popup.css" />
 </head>
 
 <body>
@@ -118,12 +14,36 @@
 
     <img id="settingsIcon" src="settings.svg" alt="Settings">
   </div>
+
   <div id="apiKeyConfig">
-    <input type="password" id="apiKeyInput" placeholder="Enter Perplexity API Key">
-    <button id="saveApiKey">Save API Key</button>
+    <div id="apiSelection">
+      <label for="apiSelect" class="amz-label">Select API:</label>
+      <select id="apiSelect" class="amz-input">
+        <option value="perplexity">Perplexity</option>
+        <option value="openai">OpenAI</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+  
+    <div id="modelSelection">
+      <label for="modelSelect" class="amz-label">Select Model:</label>
+      <select id="modelSelect" class="amz-input">
+        <!-- Options will be populated dynamically -->
+      </select>
+    </div>
+  
+    <div id="customModelConfig" style="display: none;">
+      <input type="text" id="customUrlInput" class="amz-input" placeholder="Enter Custom API URL">
+      <input type="text" id="customModelInput" class="amz-input" placeholder="Enter Custom Model Name">
+    </div>
+    <label for="apiSelect" class="amz-label">API key:</label>
+    <input type="password" id="apiKeyInput" class="amz-input" placeholder="Enter valid API Key">
+    <button id="saveApiKey" class="amz-btn">Save API Key</button>
+
   </div>
+
   <div id="errorMessage"></div>
-  <button id="scrapeButton">Summarize Reviews</button>
+  <button id="scrapeButton" class="amz-btn">Summarize Reviews</button>
   <div id="result"></div>
   <script src="popup.js" type="module"></script>
 </body>

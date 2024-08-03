@@ -6,24 +6,47 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.runtime.sendMessage({ action: "displayReviews", reviews: request.reviews });
   }
   if (request.action === "summarizeReviews") {
-    summarizeReviews(request.reviews, request.apiKey)
+    summarizeReviews(request.reviews, request.apiConfig)
       .then(() => sendResponse({ success: true }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
 });
 
-async function summarizeReviews(reviews, apiKey) {
-  const perplexity = createOpenAI({
-    apiKey: apiKey,
-    baseURL: 'https://api.perplexity.ai/',
-  });
+async function summarizeReviews(reviews, apiConfig) {
+  let ai;
+  let model;
+
+  switch (apiConfig.apiType) {
+    case 'perplexity':
+      ai = createOpenAI({
+        apiKey: apiConfig.apiKey,
+        baseURL: 'https://api.perplexity.ai/',
+      });
+      model = ai(apiConfig.model);
+      break;
+    case 'openai':
+      ai = createOpenAI({
+        apiKey: apiConfig.apiKey,
+      });
+      model = ai(apiConfig.model);
+      break;
+    case 'custom':
+      ai = createOpenAI({
+        apiKey: apiConfig.apiKey,
+        baseURL: apiConfig.customUrl,
+      });
+      model = ai(apiConfig.customModel);
+      break;
+    default:
+      throw new Error('Invalid API type');
+  }
 
   const reviewTexts = reviews.map(review => review.text).join('\n\n');
 
   try {
     const result = await streamText({
-      model: perplexity('llama-3-sonar-large-32k-online'),
+      model: model,
       maxTokens: 1024,
       system: 'You are a helpful assistant that summarizes product reviews.',
       messages: [

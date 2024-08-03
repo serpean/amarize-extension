@@ -2,6 +2,19 @@ import { marked } from 'marked';
 
 let scrapedReviews = [];
 
+const perplexityModels = [
+  { value: 'llama-3.1-sonar-small-128k-chat', label: 'llama-3.1-sonar-small-128k-chat' },
+  { value: 'llama-3.1-sonar-large-128k-chat', label: 'llama-3.1-sonar-large-128k-chat' },
+  { value: 'llama-3.1-8b-instruct', label: 'llama-3.1-8b-instruct' },
+  { value: 'llama-3.1-70b-instruct', label: 'llama-3.1-70b-instruct' }
+];
+
+const openaiModels = [
+  { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+  { value: 'gpt-4', label: 'GPT-4' },
+  { value: 'gpt-4-32k', label: 'GPT-4 32k' },
+];
+
 document.addEventListener('DOMContentLoaded', function () {
 
   const settingsIcon = document.getElementById('settingsIcon');
@@ -9,6 +22,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const apiKeyInput = document.getElementById('apiKeyInput');
   const saveApiKeyButton = document.getElementById('saveApiKey');
   const scrapeButton = document.getElementById('scrapeButton');
+  const apiSelect = document.getElementById('apiSelect');
+  const modelSelect = document.getElementById('modelSelect');
+  const customUrlInput = document.getElementById('customUrlInput');
+  const customModelInput = document.getElementById('customModelInput');
 
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -24,12 +41,21 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Comprobar si la API key está configurada
-  chrome.storage.sync.get(['openaiApiKey'], function (result) {
-    if (!result.openaiApiKey) {
+  chrome.storage.sync.get(['apiConfig'], function (result) {
+    if (result.apiConfig) {
+      const config = result.apiConfig;
+      apiKeyInput.value = config.apiKey;
+      apiSelect.value = config.apiType;
+      updateModelSelect(config.apiType);
+      if (config.apiType === 'custom') {
+        customUrlInput.value = config.customUrl || '';
+        customModelInput.value = config.customModel || '';
+      } else {
+        modelSelect.value = config.model || '';
+      }
+    } else {
       apiKeyConfig.style.display = 'block';
       scrapeButton.style.display = 'none';
-    } else {
-      apiKeyInput.value = result.openaiApiKey;
     }
   });
 
@@ -38,19 +64,28 @@ document.addEventListener('DOMContentLoaded', function () {
     scrapeButton.style.display = scrapeButton.style.display === 'none' ? 'block' : 'none';
   });
 
+
   saveApiKeyButton.addEventListener('click', function () {
     const apiKey = apiKeyInput.value.trim();
+    const apiType = apiSelect.value;
     if (apiKey) {
+      const config = {
+        apiKey: apiKey,
+        apiType: apiType,
+        model: apiType === 'custom' ? null : modelSelect.value,
+        customUrl: apiType === 'custom' ? customUrlInput.value.trim() : null,
+        customModel: apiType === 'custom' ? customModelInput.value.trim() : null
+      };
       if (chrome && chrome.storage && chrome.storage.sync) {
-        chrome.storage.sync.set({ openaiApiKey: apiKey }, function () {
-          showErrorMessage('API Key saved successfully', 'green');
+        chrome.storage.sync.set({ apiConfig: config }, function () {
+          showErrorMessage('Configuration saved successfully', 'green');
           apiKeyConfig.style.display = 'none';
           scrapeButton.style.display = 'block';
         });
       } else {
-        // Fallback para desarrollo local
-        localStorage.setItem('openaiApiKey', apiKey);
-        showErrorMessage('API Key saved successfully (local storage)', 'green');
+        // Fallback local dev
+        localStorage.setItem('apiConfig', JSON.stringify(config));
+        showErrorMessage('Configuration saved successfully (local storage)', 'green');
         apiKeyConfig.style.display = 'none';
         scrapeButton.style.display = 'block';
       }
@@ -59,8 +94,47 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  updateModelSelect('perplexity');
+  apiSelect.addEventListener('change', function() {
+    updateModelSelect(this.value);
+  });
+
   scrapeButton.addEventListener('click', startScraping);
 });
+
+function updateModelSelect(apiType) {
+  const modelSelect = document.getElementById('modelSelect');
+  const customModelConfig = document.getElementById('customModelConfig');
+
+  modelSelect.innerHTML = '';
+  
+  switch (apiType) {
+    case 'perplexity':
+      populateModelSelect(perplexityModels);
+      customModelConfig.style.display = 'none';
+      modelSelect.style.display = 'block';
+      break;
+    case 'openai':
+      populateModelSelect(openaiModels);
+      customModelConfig.style.display = 'none';
+      modelSelect.style.display = 'block';
+      break;
+    case 'custom':
+      modelSelect.style.display = 'none';
+      customModelConfig.style.display = 'block';
+      break;
+  }
+}
+
+function populateModelSelect(models) {
+  const modelSelect = document.getElementById('modelSelect');
+  models.forEach(model => {
+    const option = document.createElement('option');
+    option.value = model.value;
+    option.textContent = model.label;
+    modelSelect.appendChild(option);
+  });
+}
 
 
 function showErrorMessage(message, color = 'red') {
@@ -115,15 +189,46 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function summarizeReviewsWithAI(reviews) {
-  chrome.storage.sync.get(['openaiApiKey'], function (result) {
-    if (result.openaiApiKey) {
-      const resultDiv = document.getElementById('result');
+  if (chrome && chrome.storage && chrome.storage.sync) {
+    chrome.storage.sync.get(['apiConfig'], function (result) {
+      if (result.apiConfig && result.apiConfig.apiKey) {
+        const resultDiv = document.getElementById('result');
+        const config = result.apiConfig;
 
+        chrome.runtime.sendMessage(
+          {
+            action: "summarizeReviews",
+            reviews: reviews,
+            apiConfig: config
+          }
+        );
+
+        chrome.runtime.onConnect.addListener(function (port) {
+          if (port.name === "summarizeStream") {
+            let summary = '';
+            port.onMessage.addListener(function (msg) {
+              if (msg.chunk) {
+                summary += msg.chunk;
+                resultDiv.innerHTML = marked.parse(summary);
+                resultDiv.scrollTop = resultDiv.scrollHeight;
+              }
+            });
+          }
+        });
+      } else {
+        document.getElementById('result').textContent = 'Please save your configuration first.';
+      }
+    });
+  } else {
+    // Fallback local dev
+    const config = JSON.parse(localStorage.getItem('apiConfig'));
+    if (config && config.apiKey) {
+      const resultDiv = document.getElementById('result');
       chrome.runtime.sendMessage(
         {
           action: "summarizeReviews",
           reviews: reviews,
-          apiKey: result.openaiApiKey
+          apiConfig: config
         }
       );
 
@@ -140,7 +245,7 @@ async function summarizeReviewsWithAI(reviews) {
         }
       });
     } else {
-      document.getElementById('result').textContent = 'Please save your Perplexity API Key first.';
+      document.getElementById('result').textContent = 'Please save your configuration first.';
     }
-  });
+  }
 }
