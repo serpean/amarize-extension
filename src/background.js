@@ -6,14 +6,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.runtime.sendMessage({ action: "displayReviews", reviews: request.reviews });
   }
   if (request.action === "summarizeReviews") {
-    summarizeReviews(request.reviews, request.apiConfig)
+    summarizeReviews(request.productId, request.reviews, request.apiConfig)
       .then(() => sendResponse({ success: true }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
+  if (request.action === "getCachedSummary") {
+    getCachedSummary(request.productId)
+      .then(cachedSummary => {
+        sendResponse({ summary: cachedSummary });
+      });
+    return true;
+  }
 });
 
-async function summarizeReviews(reviews, apiConfig) {
+async function summarizeReviews(productId, reviews, apiConfig) {
   let ai;
   let model;
 
@@ -58,14 +65,55 @@ async function summarizeReviews(reviews, apiConfig) {
     });
 
     const port = chrome.runtime.connect({ name: "summarizeStream" });
-    
+    let fullSummary = '';
+
     for await (const textPart of result.textStream) {
       port.postMessage({ chunk: textPart });
+      fullSummary += textPart;
     }
-    
+
     port.disconnect();
+
+    cacheSummary(productId, fullSummary);
   } catch (error) {
     console.error('Error summarizing reviews:', error);
     throw error;
   }
+}
+
+function cacheSummary(productId, summary) {
+  const now = new Date().getTime();
+  const cacheItem = {
+    summary: summary,
+    timestamp: now
+  };
+  if (chrome && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.set({ [productId]: cacheItem }, function () {
+      console.log('Summary cached for product:', productId);
+    });
+  } else {
+    console.log('(local) Summary cached for product:', productId)
+    localStorage.setItem(productId, JSON.stringify(cacheItem));
+  }
+}
+
+
+async function getCachedSummary(productId) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(productId, function (result) {
+      if (result[productId]) {
+        const cacheItem = result[productId];
+        const now = new Date().getTime();
+        const oneDayInMs = 24 * 60 * 60 * 1000;
+        if (now - cacheItem.timestamp < oneDayInMs) {
+          resolve(cacheItem.summary);
+        } else {
+          chrome.storage.local.remove(productId);
+          resolve(null);
+        }
+      } else {
+        resolve(null);
+      }
+    });
+  });
 }

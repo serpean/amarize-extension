@@ -1,6 +1,7 @@
 let originalUrl = '';
 let totalReviews = 0;
 let reviewsWithText = 0;
+let productId = '';
 
 // Crear e insertar el modal en la página
 function createModal() {
@@ -37,6 +38,7 @@ function updateModalProgress(scrapedReviews, totalReviews) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "scrapeAllReviews") {
         originalUrl = request.originalUrl;
+        productId = request.productId;
         createModal();
         showModal();
         scrapeAllReviews();
@@ -82,7 +84,7 @@ async function scrapeAllReviews() {
     }
 
     document.getElementById('modalMessage').textContent = `Retrieved ${allReviews.length} reviews with text.`;
-    chrome.runtime.sendMessage({action: "reviewsScraped", reviews: allReviews});
+    chrome.runtime.sendMessage({action: "reviewsScraped", reviews: allReviews, productId: productId});
 
     setTimeout(() => {
         hideModal();

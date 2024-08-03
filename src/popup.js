@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
       scrapeButton.style.cursor = 'not-allowed';
       return;
     }
+
+    const productId = getProductIdFromUrl(originalProductUrl);
+    checkForCachedSummary(productId);
   });
 
   // Comprobar si la API key está configurada
@@ -136,7 +139,6 @@ function populateModelSelect(models) {
   });
 }
 
-
 function showErrorMessage(message, color = 'red') {
   const errorMessageDiv = document.getElementById('errorMessage');
   errorMessageDiv.textContent = message;
@@ -164,13 +166,14 @@ function startScraping() {
       resultDiv.textContent = 'This extension only works on Amazon product pages.';
       return;
     }
+    const productId = getProductIdFromUrl(originalProductUrl);
     const reviewsUrl = originalProductUrl.replace(/\/dp\//, '/product-reviews/') + '?reviewerType=all_reviews&sortBy=recent';
 
     chrome.tabs.update(tabs[0].id, { url: reviewsUrl }, (tab) => {
       chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
         if (info.status === 'complete' && tabId === tab.id) {
           chrome.tabs.onUpdated.removeListener(listener);
-          chrome.tabs.sendMessage(tabId, { action: "scrapeAllReviews", originalUrl: originalProductUrl });
+          chrome.tabs.sendMessage(tabId, { action: "scrapeAllReviews", originalUrl: originalProductUrl, productId: productId});
         }
       });
     });
@@ -184,11 +187,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "reviewsScraped") {
     scrapedReviews = request.reviews;
     document.getElementById('result').textContent = `Retrieved ${request.reviews.length} reviews. Summarizing...`;
-    summarizeReviewsWithAI(scrapedReviews);
+    summarizeReviewsWithAI(scrapedReviews, request.productId);
   }
 });
 
-async function summarizeReviewsWithAI(reviews) {
+async function summarizeReviewsWithAI(reviews, productId) {
   if (chrome && chrome.storage && chrome.storage.sync) {
     chrome.storage.sync.get(['apiConfig'], function (result) {
       if (result.apiConfig && result.apiConfig.apiKey) {
@@ -198,6 +201,7 @@ async function summarizeReviewsWithAI(reviews) {
         chrome.runtime.sendMessage(
           {
             action: "summarizeReviews",
+            productId: productId,
             reviews: reviews,
             apiConfig: config
           }
@@ -227,6 +231,7 @@ async function summarizeReviewsWithAI(reviews) {
       chrome.runtime.sendMessage(
         {
           action: "summarizeReviews",
+          productId: productId,
           reviews: reviews,
           apiConfig: config
         }
@@ -248,4 +253,26 @@ async function summarizeReviewsWithAI(reviews) {
       document.getElementById('result').textContent = 'Please save your configuration first.';
     }
   }
+}
+
+function getProductIdFromUrl(url) {
+  const match = url.match(/\/dp\/([A-Z0-9]+)/);
+  return match ? match[1] : null;
+}
+function displaySummary(summary) {
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = marked.parse(summary);
+  resultDiv.style.display = 'block';
+  document.getElementById('scrapeButton').textContent = 'Refresh Summary';
+}
+
+function checkForCachedSummary(productId) {
+  chrome.runtime.sendMessage(
+    { action: "getCachedSummary", productId: productId },
+    function(response) {
+      if (response && response.summary) {
+        displaySummary(response.summary);
+      }
+    }
+  );
 }
